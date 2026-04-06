@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\View\View;
 
 class MainController extends Controller
@@ -40,7 +41,16 @@ class MainController extends Controller
         //prepare all the quiz structure
         $quiz = $this->prepareQuiz($total_questions);
 
-        dd($quiz);
+        //store the quiz in session
+        session()->put([
+            'quiz' => $quiz,
+            'total_questions' => $total_questions,
+            'current_question' => 1,
+            'correct_answers' => 0,
+            'wrong_answers' => 0,
+        ]);
+
+        return redirect()->route('game');
 
        
     }
@@ -79,5 +89,69 @@ class MainController extends Controller
         }
 
         return $questions;
+    }
+    public function game():View
+    {
+        //get quiz data from session
+        $quiz = session('quiz');
+        $total_questions = session('total_questions');
+        $current_question = session('current_question') - 1 ;
+
+        //prepare answers to show in view
+        $answers = $quiz[$current_question]['wrong_answers'];
+        $answers[] = $quiz[$current_question]['correct_answer'];
+        shuffle($answers);
+        return view('game')->with([
+            'country' => $quiz[$current_question]['country'],
+            'totalQuestions' => $total_questions,
+            'currentQuestion' => $current_question ,
+            'answers' => $answers
+        ]);
+        
+    }
+    public function answer($enc_answer)
+    {
+        //decrypt the answer
+        try {
+            $answer = Crypt::decryptString($enc_answer);
+        } catch (\Exception $e) {
+            // Handle decryption error
+            return redirect()->route('game');
+
+            // game logic
+            $quiz = session('quiz');
+            $current_question = session('current_question') - 1;
+            $correct_answer = $quiz[$current_question]['correct_answer'];
+            $correct_answer = session('correct_answers');
+            $wrong_answer = session('wrong_answers');
+
+            if ($answer == $correct_answer) {
+               $correct_answer++;
+               $quiz[$current_question]['correct'] = true;
+            } else {
+                $wrong_answer++;
+                $quiz[$current_question]['correct'] = false;
+            }
+
+            //uodate session 
+            session()->put([
+                'quiz' => $quiz,
+                'correct_answers' => $correct_answer,
+                'wrong_answers' => $wrong_answer,
+            ]);
+
+            //prepare data to show the correct answer
+            $data = [
+                'country' => $quiz[$current_question]['country'],
+                'correct_answer' => $correct_answer,
+                'choice_answer' => $answer,
+                'current_question' => $current_question,
+                'total_questions' => session('total_questions')
+            ];
+
+            
+        }
+
+       
     }
 }
