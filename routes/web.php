@@ -3,6 +3,6 @@
 use App\Http\Controllers\MainController;
 use Illuminate\Support\Facades\Route;
 
-Route::view('/', 'home');
+Route::get('/', [MainController::class, 'StarGame'])->name('StarGame');
+Route::post('/',[MainController::class, 'prepareGame'])->name('prepareGame');
 
-Route::get('/show_data', [MainController::class, 'ShowData']);
