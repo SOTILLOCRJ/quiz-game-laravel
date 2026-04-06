@@ -15,7 +15,7 @@ class MainController extends Controller
         //load app_data.php file fromapp folder    
         $this->app_data = require(app_path('app_data.php'));
     }
-    public function StarGame():View
+    public function StartGame():View
     {
         return view('home');
     }
@@ -114,44 +114,74 @@ class MainController extends Controller
         //decrypt the answer
         try {
             $answer = Crypt::decryptString($enc_answer);
-        } catch (\Exception $e) {
+        } catch (\Exception $e) 
+        {
             // Handle decryption error
             return redirect()->route('game');
-
-            // game logic
-            $quiz = session('quiz');
-            $current_question = session('current_question') - 1;
-            $correct_answer = $quiz[$current_question]['correct_answer'];
-            $correct_answer = session('correct_answers');
-            $wrong_answer = session('wrong_answers');
-
-            if ($answer == $correct_answer) {
-               $correct_answer++;
-               $quiz[$current_question]['correct'] = true;
-            } else {
-                $wrong_answer++;
-                $quiz[$current_question]['correct'] = false;
-            }
-
-            //uodate session 
-            session()->put([
-                'quiz' => $quiz,
-                'correct_answers' => $correct_answer,
-                'wrong_answers' => $wrong_answer,
-            ]);
-
-            //prepare data to show the correct answer
-            $data = [
-                'country' => $quiz[$current_question]['country'],
-                'correct_answer' => $correct_answer,
-                'choice_answer' => $answer,
-                'current_question' => $current_question,
-                'total_questions' => session('total_questions')
-            ];
-
-            
         }
 
-       
+        // game logic
+        $quiz = session('quiz');
+        $current_question = session('current_question') - 1;
+        $correct_answer = $quiz[$current_question]['correct_answer'];
+        $correct_answers = session('correct_answers');
+        $wrong_answer = session('wrong_answers');
+
+        if ($answer == $correct_answer) {
+            $correct_answers++;
+            $quiz[$current_question]['correct'] = true;
+        } else {
+            $wrong_answer++;
+            $quiz[$current_question]['correct'] = false;
+        }
+
+        //update session 
+        session()->put([
+            'quiz' => $quiz,
+            'correct_answers' => $correct_answers,
+            'wrong_answers' => $wrong_answer
+        ]);
+
+        //prepare data to show the correct answer
+        $data = [
+            'country' => $quiz[$current_question]['country'],
+            'correctAnswer' => $correct_answer,
+            'choiceAnswer' => $answer,
+            'currentQuestion' => $current_question,
+            'totalQuestions' => session('total_questions')
+        ];
+
+        return view('answer_result')->with($data);
+
+    }
+    public function nextQuestion()
+    {
+        $current_question = session('current_question');
+        $total_questions = session('total_questions');
+
+        //check if the game is over
+        if ($current_question < $total_questions) {
+            $current_question++;
+            session()->put('current_question', $current_question);
+            return redirect()->route('game');
+        } else {
+            // game over
+            return redirect()->route('showResults');
+        }
+    }
+    public function showResults()
+    {
+        $total_questions = (int) session('total_questions');
+        // $correct_answers = (int) session('correct_answers');
+        // $wrong_answers = (int) session('wrong_answers');
+
+
+        return view('final_results')->with([
+            'totalQuestions' => session('total_questions'),
+            'correctAnswers' => session('correct_answers'),
+            'wrongAnswers' => session('wrong_answers'),
+            'porcentage' => round( session('correct_answers') / session('total_questions') * 100, 2)
+        ]);
+        
     }
 }
