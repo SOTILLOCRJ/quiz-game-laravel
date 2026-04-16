@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/logo.png" width="300" alt="Logo do Projeto">
+  <img src="public/assets/images/logo.jpg" width="300" alt="Logo do Projeto">
 </p>
 
 # Quiz Game em Laravel
