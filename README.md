@@ -30,6 +30,22 @@ Este projeto foi criado para praticar lógica de programação, manipulação de
 - Implementei a tela de resultado final com cálculo de porcentagem.  
 - Adicionei uma barra de progresso para mostrar o desempenho do jogador.  
 
+
+## 📸 Capturas de tela
+
+### Tela inicial
+![Tela inicial do quiz](public/assets/images/tela1.png)
+
+### Pergunta
+![Pergunta do quiz](public/assets/images/tela2.png)
+
+### Resultado do quiz
+![Pergunta do quiz](public/assets/images/tela3.png)
+
+### Resultado final
+![Pergunta do quiz](public/assets/images/tela4.png)
+
+
 ## Instalação e execução
 1. Clone o repositório:
    ```bash
